@@ -14,3 +14,6 @@ def load_mt5_csv(path):
     df = df.set_index("datetime")
     df = df.sort_index()
     return df
+
+
+
