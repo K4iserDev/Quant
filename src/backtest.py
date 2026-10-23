@@ -68,7 +68,7 @@ def backtest(df, señales, sl_mult, tp_mult, max_velas, coste):
     for idx in idx_señales:
         entrada = idx + 1
         a = a_arr[idx]  # ← CAMBIO: antes df["atr"].iloc[idx]
-        if np.isnan(a):
+        if np.isnan(a) or a <= 0:
             continue
         if entrada < libre_desde:
             continue
@@ -92,3 +92,14 @@ def backtest(df, señales, sl_mult, tp_mult, max_velas, coste):
         libre_desde = entrada + res["velas"]
 
     return pd.DataFrame(trades)
+
+def placebo_direccion(df, señales, n_sim=200, **kw):
+    """Mismas velas de entrada que 'señales' con dirección aleatoria. Devuelve la expR de cada simulación."""
+    mask = señales != 0
+    res = []
+    for seed in range(n_sim):
+        rng = np.random.default_rng(seed)
+        s = señales.copy()
+        s[mask] = rng.choice([1, -1], size=mask.sum())
+        res.append(backtest(df, s, **kw)["R"].mean())
+    return np.array(res)
