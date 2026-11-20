@@ -4,7 +4,6 @@
 
 Most retail trading projects show a nice equity curve. This one does the opposite: every idea is tested against **random-entry controls**, **direction placebos** and an **untouched out-of-sample period**, with **realistic costs**. The goal is not to find a pretty backtest, but to find out what is statistically real.
 
-> **Main finding:** with realistic costs, gold M5 (2020–2026) shows **no stable, demonstrable directional edge** with the methods tested. One reversion effect was real in-sample (p ≈ 0.02) and vanished out-of-sample (p = 0.91). An ML model learned *when* to trade, but not *which direction*.
 
 ---
 
@@ -12,18 +11,16 @@ Most retail trading projects show a nice equity curve. This one does the opposit
 
 | | |
 |---|---|
-| **Instrument** | XAUUSD, M5 candles, MetaTrader 5 export |
-| **Period** | Jan 2020 – 2026 (~480,000 candles) |
+| **Instrument** | XAUUSD, M5 candles|
+| **Period** | Jan 2020 – 2026 |
 | **In-sample / Out-of-sample** | 2020–2024 / 2025–2026 (OOS never used for tuning) |
 | **Cost per trade** | Spread floor 20 points + 5 points slippage = **$0.25**, no commission |
 | **Unit of result** | **R** (profit ÷ stop distance), not dollars — gold's volatility grew ~5× since 2023, so $ results are misleading |
 
-Data quality checks: 0 impossible candles, 0 duplicates. The broker's spread field was 0 in 56–58 % of candles in 2021–22, which is why a **spread floor** is imposed instead of trusting the raw field.
-
 ## Methodology
 
 1. **Market physics first** — understand the price process before designing any strategy.
-2. **Random-entry control** — what does a random strategy earn with the same SL/TP and costs? (≈ −0.13 R). Any strategy must beat this, not zero.
+2. **Random-entry control (Baseline)** — what does a random strategy earn with the same SL/TP and costs? (≈ −0.13 R). Any strategy must beat this, not zero.
 3. **Direction placebo** — same entry candles, random direction (200 simulations). If a strategy can't beat its own placebo, its "edge" is just *when* it trades, not *what* it predicts.
 4. **Conservative simulation** — if SL and TP are hit in the same candle, the SL counts. Entry at the next candle's open. One position at a time.
 5. **Walk-forward ML** — models retrained every year, trained only on past data with a 2-day purge gap.
