@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
-
-from src.backtest import simular_trade
+from src.backtest import simular_trade,simular_trade_trailing
 
 
 def crear_features(df, coste=0.25):
@@ -65,4 +64,29 @@ def crear_dataset(df, señales, features, sl_mult, tp_mult, max_velas, coste):
         features.iloc[ds["idx"]].reset_index()
     )  # features de la vela de la señal
     ds["y"] = (ds["R"] > 0).astype(int)  # etiqueta: ¿trade ganador?
+    return ds.dropna()
+
+
+
+
+def crear_dataset_libre(df, features, sl_mult=1.0, trail_mult=1.0, max_velas=24, coste=0.25, paso=3):
+    """
+    Una fila por vela (cada 'paso' velas): features + R de comprar (R_buy) y R de vender (R_sell),
+    ambas con SL inicial y trailing en ATR. Entrada en la vela siguiente. Requiere df['atr'].
+    """
+    o, h, l, c = (df[col].values for col in ["open", "high", "low", "close"])
+    a_arr = df["atr"].values
+
+    filas = []
+    for idx in range(300, len(df) - max_velas - 1, paso):     # 300: margen para los indicadores
+        a = a_arr[idx]
+        if np.isnan(a) or a <= 0:
+            continue
+        entrada = idx + 1
+        rb = simular_trade_trailing(o, h, l, c, entrada, 1, sl_mult * a, trail_mult * a, max_velas, coste)
+        rs = simular_trade_trailing(o, h, l, c, entrada, -1, sl_mult * a, trail_mult * a, max_velas, coste)
+        filas.append({"idx": idx, "R_buy": rb["R"], "R_sell": rs["R"]})
+
+    ds = pd.DataFrame(filas)
+    ds = ds.join(features.iloc[ds["idx"]].reset_index())
     return ds.dropna()
