@@ -1,13 +1,24 @@
-# Quant XAUUSD · Searching for a real edge in gold (M5)
+# 📈 Quant XAUUSD · Searching for a real edge in gold (M5)
+
+*[Leer en español](README_es.md)*
+
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat&logo=python&logoColor=white)
+![pandas](https://img.shields.io/badge/pandas-150458?style=flat&logo=pandas&logoColor=white)
+![LightGBM](https://img.shields.io/badge/LightGBM-walk--forward-2C9AB7?style=flat)
+![statsmodels](https://img.shields.io/badge/statsmodels-statistics-4C72B0?style=flat)
+![Jupyter](https://img.shields.io/badge/Jupyter-notebooks-F37626?style=flat&logo=jupyter&logoColor=white)
+![Status](https://img.shields.io/badge/status-research-yellow?style=flat)
 
 *A quantitative research project: can a systematic strategy beat costs on XAUUSD 5-minute data — and can we **prove** it isn't luck?*
 
 Most retail trading projects show a nice equity curve. This one does the opposite: every idea is tested against **random-entry controls**, **direction placebos** and an **untouched out-of-sample period**, with **realistic costs**. The goal is not to find a pretty backtest, but to find out what is statistically real.
 
 
+![Results: strategies vs random control, and strategy A vs its placebo in- and out-of-sample](docs/demo.png)
+
 ---
 
-## Data & cost model
+## 📊 Data & cost model
 
 | | |
 |---|---|
@@ -17,7 +28,7 @@ Most retail trading projects show a nice equity curve. This one does the opposit
 | **Cost per trade** | Spread floor 20 points + 5 points slippage = **$0.25**, no commission |
 | **Unit of result** | **R** (profit ÷ stop distance), not dollars — gold's volatility grew ~5× since 2023, so $ results are misleading |
 
-## Methodology
+## 🔬 Methodology
 
 1. **Market physics first** — understand the price process before designing any strategy.
 2. **Random-entry control (Baseline)** — what does a random strategy earn with the same SL/TP and costs? (≈ −0.13 R). Any strategy must beat this, not zero.
@@ -25,7 +36,18 @@ Most retail trading projects show a nice equity curve. This one does the opposit
 4. **Conservative simulation** — if SL and TP are hit in the same candle, the SL counts. Entry at the next candle's open. One position at a time.
 5. **Walk-forward ML** — models retrained every year, trained only on past data with a 2-day purge gap.
 
-## Results
+```mermaid
+flowchart LR
+    A[MT5 export<br/>XAUUSD M5] --> B[Market physics<br/>Hurst · ACF · variance ratio]
+    B --> C[Hypothesis<br/>A · B · C]
+    C --> D{Beats random control<br/>and placebo?}
+    D -- in-sample --> E[Tune on 2020–2024]
+    E --> F[Test once on<br/>2025–2026 OOS]
+    C --> G[LightGBM<br/>walk-forward]
+    G --> D
+```
+
+## 📈 Results
 
 ### 1 · Market physics (`02_market.ipynb`)
 
@@ -68,14 +90,14 @@ LightGBM, walk-forward 2022–2026, 13 causal features (z-score to EMA, daily tr
 
 The diagnostic that explains it: from 2023 on, the free-direction model buys 67–88 % of the time. On the same candles, **"always buy" would have done better in 2026** (+0.184 R vs +0.142 R). The model learned gold's bullish bias and to trade when volatility makes costs small — not to predict direction. The most important feature was always `coste_rel` (cost relative to volatility).
 
-## Conclusions
+## 🧠 Conclusions
 
 1. **Costs decide everything on M5.** Most of the 2025–26 "improvement" of every strategy comes from gold's volatility rising and making the fixed cost relatively smaller — the random control improves too.
 2. **A real effect is not a tradable edge.** Strategy A was statistically real in-sample and still lost money after costs, then disappeared out-of-sample.
 3. **Placebos catch what equity curves hide.** Several variants looked good OOS, but their own direction placebos did just as well.
 4. **ML amplifies what is in the data.** With no directional signal in the features, the model found bias and volatility timing instead.
 
-## Project structure
+## 🗂️ Project structure
 
 ```
 Quant/
@@ -93,10 +115,11 @@ Quant/
 │   ├── 03_strategy.ipynb    # random control, hypotheses A and B, placebos
 │   ├── 04_parameters.ipynb  # in-sample grid and out-of-sample test of A
 │   └── 06_ML.ipynb          # LightGBM walk-forward
-└── reports/                 # saved results and figures
+├── reports/                 # saved results and figures
+└── docs/                    # images for this README
 ```
 
-## How to reproduce
+## 🚀 How to reproduce
 
 ```bash
 git clone https://github.com/K4iserDev/Quant.git
@@ -108,14 +131,16 @@ pip install -r requirements.txt
 
 Data is not included. Export XAUUSD M5 history from MetaTrader 5 (*View → Symbols → Bars → Export*) and save it as `data/raw/XAUUSD_M5.csv`, then run the notebooks in order.
 
-## Next steps
+## 🛣️ Next steps
 
-- Neural network on the same dataset to compare against LightGBM.
-- Ablation table: fixed rules vs ML for entries and risk management.
-- Apply the same pipeline to other assets (NAS100, BTCUSD) and higher timeframes (M15, H1), where costs weigh less.
+- [ ] Neural network on the same dataset to compare against LightGBM.
+- [ ] Ablation table: fixed rules vs ML for entries and risk management.
+- [ ] Apply the same pipeline to other assets (NAS100, BTCUSD) and higher timeframes (M15, H1), where costs weigh less.
 
 ---
 
 **Stack:** Python · pandas · NumPy · SciPy · statsmodels · LightGBM · Matplotlib · Seaborn · Jupyter
 
 *Research project, not financial advice.*
+
+**Author:** Asier Martin · [GitHub](https://github.com/K4iserDev) · [LinkedIn](https://www.linkedin.com/in/asier-martin01)
